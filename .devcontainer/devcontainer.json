@@ -1,0 +1,20 @@
+{
+	"name": "slawo-go-cache",
+	"image": "mcr.microsoft.com/devcontainers/go:1.23",
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			"extensions": [
+				"golang.Go"
+			]
+		}
+	},
+	"forwardPorts": [
+		8080
+	],
+	// Use 'otherPortsAttributes' to configure any ports that aren't configured using 'portsAttributes'.
+	"otherPortsAttributes": {
+		"onAutoForward": "notify"
+	},
+	"postCreateCommand": "go version"
+}
