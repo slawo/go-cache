@@ -1,40 +1,35 @@
-package datastore
+package memory
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/slawo/go-cache/datastore"
 )
 
-const (
-	InvalidLockIDError = "invalid lock ID"
-)
-
-var (
-	// ErrInvalidFileID is returned when an invalid file ID is provided.
-	ErrInvalidLockID = errors.New(InvalidLockIDError)
-)
-
-func NewMutexSynchroniser() (*MutexSynchroniser, error) {
-	return &MutexSynchroniser{
+// NewSynchroniser creates a new Synchroniser instance.
+func NewSynchroniser() (*Synchroniser, error) {
+	return &Synchroniser{
 		locks: make(map[string]*MutexWriteLock),
 	}, nil
 }
 
-type MutexSynchroniser struct {
+type Synchroniser struct {
 	mu    sync.Mutex
 	locks map[string]*MutexWriteLock
 }
 
-func (r *MutexSynchroniser) GetWriteLock(ctx context.Context, lockID string) (DataWriteLock, error) {
+func (r *Synchroniser) GetWriteLock(ctx context.Context, lockID string) (datastore.DataWriteLock, error) {
 	if strings.TrimSpace(lockID) == "" {
-		return nil, ErrInvalidLockID
+		return nil, datastore.ErrInvalidLockID
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, exists := r.locks[lockID]; exists {
-		return nil, errors.New("lock is already held")
+		return nil, fmt.Errorf("%w: %s", datastore.ErrLockAlreadyHeld, lockID)
 	}
 	lock := &MutexWriteLock{
 		s:        r,
@@ -45,15 +40,9 @@ func (r *MutexSynchroniser) GetWriteLock(ctx context.Context, lockID string) (Da
 	return lock, nil
 }
 
-func (r *MutexSynchroniser) removeWriteLock(l *MutexWriteLock) (bool, error) {
-	if l == nil {
-		return false, errors.New("lock is nil")
-	}
+func (r *Synchroniser) removeWriteLock(l *MutexWriteLock) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if l.Unlocked() {
-		return false, nil
-	}
 	lock, exists := r.locks[l.lockID]
 	if !exists {
 		return false, errors.New("lock is not held")
@@ -67,7 +56,7 @@ func (r *MutexSynchroniser) removeWriteLock(l *MutexWriteLock) (bool, error) {
 }
 
 type MutexWriteLock struct {
-	s        *MutexSynchroniser
+	s        *Synchroniser
 	lockID   string
 	unlocked chan struct{}
 }
