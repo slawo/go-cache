@@ -1,10 +1,22 @@
 {
 	"name": "slawo-go-cache",
-	"image": "mcr.microsoft.com/devcontainers/go:1.23",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"workspaceFolder": "${localWorkspaceFolder}",
+	"workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+	"features": {
+	  "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+	},
+	"remoteEnv": {
+	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+	},
 	"customizations": {
 		// Configure properties specific to VS Code.
 		"vscode": {
 			"extensions": [
+				"EditorConfig.EditorConfig",
+				"ms-azuretools.vscode-docker",
 				"golang.Go"
 			]
 		}
