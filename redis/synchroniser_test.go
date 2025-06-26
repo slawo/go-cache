@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/slawo/go-cache/datastore"
-	"github.com/slawo/go-cache/datastore/redis"
 	"github.com/slawo/go-cache/datastore/tests"
+	"github.com/slawo/go-cache/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
