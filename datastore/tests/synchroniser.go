@@ -120,8 +120,9 @@ func RunParallelLockTests(t *testing.T, opts ParallelLockTestsOpts) {
 	for i := 0; i < opts.MaxLocks; i++ {
 		assert.Equal(t, 1, validCt[i], "Lock %d was not acquired", i)
 	}
+	mt := (opts.MaxTries * len(syncs)) - 1
 	for i := 0; i < opts.MaxLocks; i++ {
-		assert.Equal(t, (opts.MaxTries*len(syncs))-1, errsCt[i], "Lock %d has not failed %d times", i, len(syncs)-1)
+		assert.Equal(t, mt, errsCt[i], "Lock %d has failed %d times should have failed %d times", i, errsCt[i], mt)
 	}
 
 	st.Lock()
