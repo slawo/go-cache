@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -57,7 +58,7 @@ func RunParallelLockTests(t *testing.T, opts ParallelLockTestsOpts) {
 		for err := range errs {
 			if err != nil {
 				msg := err.Error()
-				if errors.Is(err, datastore.ErrLockAlreadyHeld) {
+				if errors.Is(err, datastore.ErrLockAlreadyHeld) || strings.Contains(err.Error(), datastore.LockAlreadyHeldError) {
 					stid := err.Error()[24:29]
 					idx, err := strconv.Atoi(stid)
 					require.NoError(t, err)
