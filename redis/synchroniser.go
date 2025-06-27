@@ -4,18 +4,31 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/slawo/go-cache/datastore"
 )
 
-func NewSynchroniser(ctx context.Context, dsn string, password string, db int) (*RedisSynchroniser, error) {
+func NewSynchroniser(ctx context.Context, opts ...SynchroniserOption) (*RedisSynchroniser, error) {
+	o := SynchroniserOptions{}
+	for _, opt := range opts {
+		if err := opt.Apply(&o); err != nil {
+			return nil, fmt.Errorf("synchroniser: failed to apply option: %w", err)
+		}
+	}
+
+	if o.DSN == "" {
+		return nil, fmt.Errorf("synchroniser: DSN cannot be empty")
+	}
+	if o.LockTimeoutSeconds == 0 {
+		o.LockTimeoutSeconds = 6 // Default timeout of 6 seconds
+	}
+
 	client := redis.NewClient(&redis.Options{
-		Addr:     dsn,
-		Password: password, // no password set
-		DB:       db,       // use default DB
+		Addr:     o.DSN,
+		Password: o.Password,
+		DB:       o.DB,
 	})
 
 	if err := client.Ping(context.Background()).Err(); err != nil {
@@ -30,62 +43,24 @@ func NewSynchroniser(ctx context.Context, dsn string, password string, db int) (
 	return &RedisSynchroniser{
 		client:             client,
 		managerID:          mID.String(),
-		defaultLockTimeout: 10 * time.Second, // Default lock timeout
+		lockTimeoutSeconds: o.LockTimeoutSeconds,
 	}, nil
 }
 
 type RedisSynchroniser struct {
 	client             *redis.Client
 	managerID          string
-	defaultLockTimeout time.Duration
+	lockTimeoutSeconds int
 }
 
 func (r *RedisSynchroniser) GetWriteLock(ctx context.Context, lockID string) (datastore.DataWriteLock, error) {
+	mID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
 	if strings.TrimSpace(lockID) == "" || len(lockID) < 3 {
 		return nil, datastore.ErrInvalidLockID
 	}
 	lockKey := "lock:" + lockID + ":write" // Ensure lockID is unique for write locks
-	res := r.client.SetArgs(ctx, lockKey, r.managerID, redis.SetArgs{
-		TTL:  r.defaultLockTimeout,
-		Mode: "NX",
-		Get:  true,
-	})
-
-	if res.Err() != nil && res.Err() != redis.Nil {
-		return nil, res.Err()
-	} else if res.Val() != "" {
-
-		return nil, fmt.Errorf("%w: %s", datastore.ErrLockAlreadyHeld, lockID)
-	}
-
-	return &WriteLock{
-		client:    r.client,
-		lockKey:   lockKey,
-		lockValue: r.managerID,
-		unlocked:  make(chan struct{}),
-	}, nil
+	return NewWriteLock(ctx, r.client, lockKey, mID.String(), r.lockTimeoutSeconds)
 }
-
-// func (r *RedisSynchroniser) aquireLock(ctx context.Context, lockKey string) (*WriteLock, error) {
-
-// 	// err := r.client.Set(ctx, "key", "value", 0).Err()
-// 	// if err != nil {
-// 	// 	panic(err)
-// 	// }
-
-// 	// val, err := r.client.Get(ctx, "key").Result()
-// 	// if err != nil {
-// 	// 	panic(err)
-// 	// }
-// 	// fmt.Println("key", val)
-
-// 	// val2, err := r.client.Get(ctx, "key2").Result()
-// 	// if err == redis.Nil {
-// 	// 	fmt.Println("key2 does not exist")
-// 	// } else if err != nil {
-// 	// 	panic(err)
-// 	// } else {
-// 	// 	fmt.Println("key2", val2)
-// 	// }
-// 	// return nil, nil // Placeholder for actual lock acquisition logic
-// }

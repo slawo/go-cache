@@ -44,17 +44,11 @@ func NewServer(t *testing.T) string {
 func NewSynchroniser(t *testing.T) *redis.RedisSynchroniser {
 	dsn := NewServer(t)
 	ctx := t.Context()
-	s, err := redis.NewSynchroniser(ctx, dsn, "", 0)
+	s, err := redis.NewSynchroniser(ctx, redis.SynchroniserDSN(dsn))
 	assert.NoError(t, err)
 	assert.IsType(t, &redis.RedisSynchroniser{}, s)
 	return s
 }
-
-// func TestNewMutexSynchroniser(t *testing.T) {
-// 	s, err := datastore.NewMutexSynchroniser()
-// 	assert.NoError(t, err)
-// 	assert.IsType(t, &datastore.MutexSynchroniser{}, s)
-// }
 
 func TestSynchroniserGetLockWithEmptyKey(t *testing.T) {
 	s := NewSynchroniser(t)
@@ -111,7 +105,7 @@ func TestMutexSynchroniserGetLockErrorOnSecondCall(t *testing.T) {
 func TestMutexSynchroniserGetLockMultiTest(t *testing.T) {
 	dsn := NewServer(t)
 	create := func(ctx context.Context, t *testing.T) (datastore.DataSynchroniser, error) {
-		s, err := redis.NewSynchroniser(context.Background(), dsn, "", 0)
+		s, err := redis.NewSynchroniser(context.Background(), redis.SynchroniserDSN(dsn))
 		require.NoError(t, err)
 		require.IsType(t, &redis.RedisSynchroniser{}, s)
 		return s, err
