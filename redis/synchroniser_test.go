@@ -69,36 +69,39 @@ func TestMutexSynchroniserGetLockWithSpacesKey(t *testing.T) {
 func TestMutexSynchroniserGetLock(t *testing.T) {
 	s := NewSynchroniser(t)
 
-	lock, err := s.GetWriteLock(context.Background(), "testKey")
+	lock, err := s.GetWriteLock(context.Background(), "redisKey")
 	assert.NoError(t, err)
 	assert.NotNil(t, lock)
 	assert.IsType(t, &redis.WriteLock{}, lock)
-
+	t.Cleanup(func() {
+		err := lock.Unlock()
+		assert.NoError(t, err)
+	})
 }
 
 func TestMutexSynchroniserGetLockErrorOnSecondCall(t *testing.T) {
 	s := NewSynchroniser(t)
 
-	lock1, err := s.GetWriteLock(context.Background(), "testKey2")
+	lock1, err := s.GetWriteLock(context.Background(), "redisKey2")
 	assert.NoError(t, err)
 	assert.NotNil(t, lock1)
 
-	lock2, err := s.GetWriteLock(context.Background(), "testKey2")
-	assert.EqualError(t, err, "lock is already held: testKey2")
+	lock2, err := s.GetWriteLock(context.Background(), "redisKey2")
+	assert.EqualError(t, err, "lock is already held: lock:redisKey2:write")
 	assert.Nil(t, lock2)
 
 	err = lock1.Unlock()
 	assert.NoError(t, err)
 
-	lock3, err := s.GetWriteLock(context.Background(), "testKey2")
+	lock3, err := s.GetWriteLock(context.Background(), "redisKey2")
 	assert.NoError(t, err)
 	assert.NotNil(t, lock3)
 
 	err = lock1.Unlock()
 	assert.NoError(t, err)
 
-	lock4, err := s.GetWriteLock(context.Background(), "testKey2")
-	assert.EqualError(t, err, "lock is already held: testKey2")
+	lock4, err := s.GetWriteLock(context.Background(), "redisKey2")
+	assert.EqualError(t, err, "lock is already held: lock:redisKey2:write")
 	assert.Nil(t, lock4)
 }
 

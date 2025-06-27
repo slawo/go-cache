@@ -92,7 +92,7 @@ func RunParallelLockTests(t *testing.T, opts ParallelLockTestsOpts) {
 			defer st.RUnlock()
 			for j := 0; j < opts.MaxLocks; j++ {
 				for i := 0; i < opts.MaxTries; i++ {
-					lock, err := s.GetWriteLock(context.Background(), fmt.Sprintf("testKey%d", j))
+					lock, err := s.GetWriteLock(context.Background(), fmt.Sprintf("multiTestKey%06d", j))
 					if err != nil {
 						errs <- fmt.Errorf("synchroniser: %02d, lock: %05d: %w", index, j, err)
 					} else {

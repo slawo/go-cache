@@ -38,7 +38,7 @@ func TestSynchroniserGetLock(t *testing.T) {
 	s, err := memory.NewSynchroniser()
 	assert.NoError(t, err)
 
-	lock, err := s.GetWriteLock(context.Background(), "testKey")
+	lock, err := s.GetWriteLock(context.Background(), "memKey")
 	assert.NoError(t, err)
 	assert.NotNil(t, lock)
 }
@@ -47,18 +47,18 @@ func TestSynchroniserGetLockErrorOnSecondCall(t *testing.T) {
 	s, err := memory.NewSynchroniser()
 	assert.NoError(t, err)
 
-	lock1, err := s.GetWriteLock(context.Background(), "testKey2")
+	lock1, err := s.GetWriteLock(context.Background(), "memKey2")
 	assert.NoError(t, err)
 	assert.NotNil(t, lock1)
 
-	lock2, err := s.GetWriteLock(context.Background(), "testKey2")
-	assert.EqualError(t, err, "lock is already held: testKey2")
+	lock2, err := s.GetWriteLock(context.Background(), "memKey2")
+	assert.EqualError(t, err, "lock is already held: memKey2")
 	assert.Nil(t, lock2)
 
 	err = lock1.Unlock()
 	assert.NoError(t, err)
 
-	lock3, err := s.GetWriteLock(context.Background(), "testKey2")
+	lock3, err := s.GetWriteLock(context.Background(), "memKey2")
 	assert.NoError(t, err)
 	assert.NotNil(t, lock3)
 }
