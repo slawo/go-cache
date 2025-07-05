@@ -91,7 +91,7 @@ type SimpleFileReader struct {
 	p    int64
 }
 
-func (r *SimpleFileReader) GetPosition() int64 {
+func (r *SimpleFileReader) GetPosition(ctx context.Context) int64 {
 	return r.p
 }
 
@@ -117,7 +117,7 @@ func (r *SimpleFileReader) Close() error {
 	return nil
 }
 
-func (w *SimpleFileWriter) GetPosition() int64 {
+func (w *SimpleFileWriter) GetPosition(ctx context.Context) int64 {
 	return w.p
 }
 

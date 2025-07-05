@@ -13,7 +13,7 @@ type IOReader struct {
 	d  *IOData
 }
 
-func (r *IOReader) GetPosition() int64 {
+func (r *IOReader) GetPosition(ctx context.Context) int64 {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.p

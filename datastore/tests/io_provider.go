@@ -84,7 +84,7 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		reader, err := p.GetReaderAt(context.Background(), fn, 0)
 		assert.NoError(t, err)
 		assert.NotNil(t, reader)
-		assert.Equal(t, int64(0), reader.GetPosition())
+		assert.Equal(t, int64(0), reader.GetPosition(t.Context()))
 		assert.NoError(t, reader.Close())
 	})
 	t.Run("GetReaderAtPosition", func(t *testing.T) {
@@ -96,7 +96,7 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		reader, err := p.GetWriterAt(context.Background(), fn, 1000000000) // 1GB offset
 		assert.NoError(t, err)
 		assert.NotNil(t, reader)
-		assert.Equal(t, int64(1000000000), reader.GetPosition())
+		assert.Equal(t, int64(1000000000), reader.GetPosition(t.Context()))
 		assert.NoError(t, reader.Close())
 	})
 	t.Run("GetReaderMultiCloseError", func(t *testing.T) {
@@ -108,7 +108,7 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		reader, err := p.GetWriterAt(context.Background(), fn, 0)
 		assert.NoError(t, err)
 		assert.NotNil(t, reader)
-		assert.Equal(t, int64(0), reader.GetPosition())
+		assert.Equal(t, int64(0), reader.GetPosition(t.Context()))
 		assert.NoError(t, reader.Close())
 		assert.Error(t, reader.Close())
 	})
@@ -128,11 +128,11 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		data := []byte("test data for writing to file")
 
 		t.Run("WriteData", func(t *testing.T) {
-			assert.Equal(t, int64(0), writer.GetPosition(), "Initial position should be 0")
+			assert.Equal(t, int64(0), writer.GetPosition(t.Context()), "Initial position should be 0")
 			n, err := writer.Write(t.Context(), data)
 			require.NoError(t, err)
 			require.Equal(t, len(data), n)
-			require.Equal(t, int64(len(data)), writer.GetPosition())
+			require.Equal(t, int64(len(data)), writer.GetPosition(t.Context()))
 		})
 		reader, err := p.GetReaderAt(context.Background(), fn, 0)
 		assert.NoError(t, err)
@@ -141,20 +141,20 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 			assert.NoError(t, reader.Close())
 		})
 		t.Run("ReadData", func(t *testing.T) {
-			assert.Equal(t, int64(0), reader.GetPosition(), "Initial position should be 0")
+			assert.Equal(t, int64(0), reader.GetPosition(t.Context()), "Initial position should be 0")
 			readData := make([]byte, 1024)
 			n, err := reader.Read(t.Context(), readData)
 			assert.EqualError(t, err, io.EOF.Error())
 			assert.Equal(t, len(data), n)
 			assert.Equal(t, data, readData[:n])
-			assert.Equal(t, int64(len(data)), reader.GetPosition(), "Position should be equal to data length")
+			assert.Equal(t, int64(len(data)), reader.GetPosition(t.Context()), "Position should be equal to data length")
 		})
 		t.Run("ReadDataEOF", func(t *testing.T) {
 			readData := make([]byte, 1024)
 			n, err := reader.Read(t.Context(), readData)
 			assert.EqualError(t, err, io.EOF.Error())
 			assert.Equal(t, 0, n, "No more data should be read after EOF")
-			assert.Equal(t, int64(len(data)), reader.GetPosition(), "Position should remain at the end of the data")
+			assert.Equal(t, int64(len(data)), reader.GetPosition(t.Context()), "Position should remain at the end of the data")
 		})
 		// Now let's read from a specific offset
 
@@ -162,18 +162,18 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		reader2, err := p.GetReaderAt(context.Background(), fn, int64(offset))
 		assert.NoError(t, err)
 		require.NotNil(t, reader2)
-		assert.Equal(t, int64(4), reader2.GetPosition())
+		assert.Equal(t, int64(4), reader2.GetPosition(t.Context()))
 		t.Cleanup(func() {
 			assert.NoError(t, reader2.Close())
 		})
 		t.Run("GetReaderAtOffset", func(t *testing.T) {
-			assert.Equal(t, int64(4), reader2.GetPosition(), "Position should be equal to offset")
+			assert.Equal(t, int64(4), reader2.GetPosition(t.Context()), "Position should be equal to offset")
 			readData := make([]byte, 1024)
 			n, err := reader2.Read(t.Context(), readData)
 			assert.EqualError(t, err, io.EOF.Error())
 			assert.Equal(t, len(data)-offset, n)
 			assert.Equal(t, data[offset:], readData[:n])
-			assert.Equal(t, int64(len(data)), reader2.GetPosition())
+			assert.Equal(t, int64(len(data)), reader2.GetPosition(t.Context()))
 		})
 
 		t.Run("GetReaderAtOffsetEOF", func(t *testing.T) {
@@ -182,7 +182,7 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 			assert.EqualError(t, err, io.EOF.Error())
 			assert.Equal(t, 0, n)
 			assert.Equal(t, []byte{}, readData[:n])
-			assert.Equal(t, int64(len(data)), reader2.GetPosition())
+			assert.Equal(t, int64(len(data)), reader2.GetPosition(t.Context()))
 		})
 	})
 
@@ -202,11 +202,11 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		data := []byte("test data for writing to file")
 
 		t.Run("WriteData", func(t *testing.T) {
-			assert.Equal(t, int64(0), writer.GetPosition(), "Initial position should be 0")
+			assert.Equal(t, int64(0), writer.GetPosition(t.Context()), "Initial position should be 0")
 			n, err := writer.Write(t.Context(), data)
 			require.NoError(t, err)
 			require.Equal(t, len(data), n)
-			require.Equal(t, int64(len(data)), writer.GetPosition())
+			require.Equal(t, int64(len(data)), writer.GetPosition(t.Context()))
 		})
 		reader, err := p.GetReaderAt(context.Background(), fn, 0)
 		assert.NoError(t, err)
@@ -216,16 +216,16 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 		})
 
 		t.Run("ReadData", func(t *testing.T) {
-			for writer.GetPosition() < int64(len(data)) {
+			for writer.GetPosition(t.Context()) < int64(len(data)) {
 				readData := make([]byte, 8)
 				n, err := reader.Read(t.Context(), readData)
-				if reader.GetPosition() >= int64(len(data)) {
+				if reader.GetPosition(t.Context()) >= int64(len(data)) {
 					assert.EqualError(t, err, io.EOF.Error(), "Expected EOF when reading beyond data length")
 				} else {
 					assert.NoError(t, err, "Expected no error when reading data")
 				}
 				assert.Greater(t, n, 0, "Expected to read some data")
-				assert.Equal(t, data[reader.GetPosition()-int64(n):reader.GetPosition()], readData[:n])
+				assert.Equal(t, data[reader.GetPosition(t.Context())-int64(n):reader.GetPosition(t.Context())], readData[:n])
 			}
 		})
 	})
@@ -250,7 +250,7 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 
 				t.Run("WriteData", func(t *testing.T) {
 					for i := 0; i < len(data); i += 8 {
-						require.Equal(t, int64(i), writer.GetPosition())
+						require.Equal(t, int64(i), writer.GetPosition(t.Context()))
 						end := i + 8
 						if end > len(data) {
 							end = len(data)
@@ -258,11 +258,11 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 						n, err := writer.Write(t.Context(), data[i:end])
 						require.NoError(t, err)
 						require.Equal(t, end-i, n)
-						require.Equal(t, int64(end), writer.GetPosition())
+						require.Equal(t, int64(end), writer.GetPosition(t.Context()))
 					}
 				})
 
-				require.Equal(t, int64(len(data)), writer.GetPosition())
+				require.Equal(t, int64(len(data)), writer.GetPosition(t.Context()))
 				reader, err := p.GetReaderAt(context.Background(), fn, 0)
 				assert.NoError(t, err)
 				require.NotNil(t, reader)
@@ -271,13 +271,13 @@ func RunBaseIOProviderTests(t *testing.T, opts BaseIOProviderTestsOpts) {
 				})
 
 				t.Run("ReadData", func(t *testing.T) {
-					assert.Equal(t, int64(0), reader.GetPosition(), "Initial position should be 0")
+					assert.Equal(t, int64(0), reader.GetPosition(t.Context()), "Initial position should be 0")
 					readData := make([]byte, 1024)
 					n, err := reader.Read(t.Context(), readData)
 					assert.EqualError(t, err, io.EOF.Error())
 					assert.Equal(t, len(data), n)
 					assert.Equal(t, data, readData[:n])
-					assert.Equal(t, int64(len(data)), reader.GetPosition(), "Position should be equal to data length")
+					assert.Equal(t, int64(len(data)), reader.GetPosition(t.Context()), "Position should be equal to data length")
 				})
 			})
 		}

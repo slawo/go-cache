@@ -13,7 +13,7 @@ type IOWriter struct {
 	d  *IOData
 }
 
-func (w *IOWriter) GetPosition() int64 {
+func (w *IOWriter) GetPosition(ctx context.Context) int64 {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
 	return w.p

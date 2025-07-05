@@ -29,7 +29,7 @@ func TestIOProviderGetReaderAt(t *testing.T) {
 	reader, err = p.GetReaderAt(t.Context(), "test-file", 0)
 	assert.NoError(t, err, "Expected no error for valid ID")
 	assert.NotNil(t, reader, "Expected reader to be non-nil")
-	assert.Equal(t, int64(0), reader.GetPosition(), "Expected reader ID to match")
+	assert.Equal(t, int64(0), reader.GetPosition(t.Context()), "Expected reader ID to match")
 
 	err = reader.Close()
 	assert.NoError(t, err, "Expected no error when closing reader")
@@ -38,7 +38,7 @@ func TestIOProviderGetReaderAt(t *testing.T) {
 	reader, err = p.GetReaderAt(t.Context(), "test-file", 100000)
 	assert.NoError(t, err, "Expected no error for valid ID")
 	assert.NotNil(t, reader, "Expected reader to be non-nil")
-	assert.Equal(t, int64(100000), reader.GetPosition(), "Expected reader ID to match")
+	assert.Equal(t, int64(100000), reader.GetPosition(t.Context()), "Expected reader ID to match")
 
 	err = reader.Close()
 	assert.NoError(t, err, "Expected no error when closing reader")
@@ -57,7 +57,7 @@ func TestIOProviderGetWriterAt(t *testing.T) {
 	reader, err = p.GetWriterAt(t.Context(), "test-file", 0)
 	assert.NoError(t, err, "Expected no error for valid ID")
 	assert.NotNil(t, reader, "Expected reader to be non-nil")
-	assert.Equal(t, int64(0), reader.GetPosition(), "Expected reader ID to match")
+	assert.Equal(t, int64(0), reader.GetPosition(t.Context()), "Expected reader ID to match")
 
 	err = reader.Close()
 	assert.NoError(t, err, "Expected no error when closing reader")
@@ -66,7 +66,7 @@ func TestIOProviderGetWriterAt(t *testing.T) {
 	reader, err = p.GetWriterAt(t.Context(), "test-file", 100000)
 	assert.NoError(t, err, "Expected no error for valid ID")
 	assert.NotNil(t, reader, "Expected reader to be non-nil")
-	assert.Equal(t, int64(100000), reader.GetPosition(), "Expected reader ID to match")
+	assert.Equal(t, int64(100000), reader.GetPosition(t.Context()), "Expected reader ID to match")
 
 	err = reader.Close()
 	assert.NoError(t, err, "Expected no error when closing reader")

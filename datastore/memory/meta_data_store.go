@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -24,7 +25,7 @@ type MetaDataStore struct {
 }
 
 // GetFileMeta retrieves metadata for a file by its ID.
-func (s *MetaDataStore) GetFileMeta(fileId string) (*datastore.FileMeta, error) {
+func (s *MetaDataStore) GetFileMeta(ctx context.Context, fileId string) (*datastore.FileMeta, error) {
 	if strings.TrimSpace(fileId) == "" {
 		return nil, fmt.Errorf("%w: empty file ID", datastore.ErrInvalidFileID)
 	}
@@ -38,7 +39,7 @@ func (s *MetaDataStore) GetFileMeta(fileId string) (*datastore.FileMeta, error) 
 }
 
 // SaveFileMeta saves metadata for a file.
-func (s *MetaDataStore) SaveFileMeta(fileMeta *datastore.FileMeta) error {
+func (s *MetaDataStore) SaveFileMeta(ctx context.Context, fileMeta *datastore.FileMeta) error {
 	if fileMeta == nil {
 		return errors.New("file metadata cannot be nil")
 	} else if strings.TrimSpace(fileMeta.FileId) == "" {
@@ -57,7 +58,7 @@ func (s *MetaDataStore) SaveFileMeta(fileMeta *datastore.FileMeta) error {
 }
 
 // GetFileCompletionData retrieves completion data for a file by its ID.
-func (s *MetaDataStore) GetFileCompletionData(fileId string) (*datastore.FileCompletionData, error) {
+func (s *MetaDataStore) GetFileCompletionData(ctx context.Context, fileId string) (*datastore.FileCompletionData, error) {
 	if strings.TrimSpace(fileId) == "" {
 		return nil, fmt.Errorf("%w: empty file ID", datastore.ErrInvalidFileID)
 	}
@@ -71,7 +72,7 @@ func (s *MetaDataStore) GetFileCompletionData(fileId string) (*datastore.FileCom
 }
 
 // SaveFileCompletionData saves completion data for a file.
-func (s *MetaDataStore) SaveFileCompletionData(completionData *datastore.FileCompletionData) error {
+func (s *MetaDataStore) SaveFileCompletionData(ctx context.Context, completionData *datastore.FileCompletionData) error {
 	if completionData == nil {
 		return errors.New("completion data cannot be nil")
 	} else if strings.TrimSpace(completionData.FileId) == "" {

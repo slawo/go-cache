@@ -15,13 +15,13 @@ func TestNewMemoryMetaDataStore(t *testing.T) {
 
 func TestMemoryMetaDataStoreSaveFileMetaErrorOnNilData(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	err := store.SaveFileMeta(nil)
+	err := store.SaveFileMeta(t.Context(), nil)
 	assert.EqualError(t, err, "file metadata cannot be nil")
 }
 
 func TestMemoryMetaDataStoreSaveFileMetaErrorOnInvalidID(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	err := store.SaveFileMeta(&datastore.FileMeta{
+	err := store.SaveFileMeta(t.Context(), &datastore.FileMeta{
 		FileId:   " 	",
 		FileSize: 1024,
 		Checksum: "abc123",
@@ -31,14 +31,14 @@ func TestMemoryMetaDataStoreSaveFileMetaErrorOnInvalidID(t *testing.T) {
 
 func TestMemoryMetaDataStoreGetFileMetaErrorOnInvalidID(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	m, err := store.GetFileMeta(" 	")
+	m, err := store.GetFileMeta(t.Context(), " 	")
 	assert.ErrorIs(t, err, datastore.ErrInvalidFileID)
 	assert.Nil(t, m)
 }
 
 func TestMemoryMetaDataStoreGetFileMetaErrorOnMissingMeta(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	m, err := store.GetFileMeta("nonexistent-file-id")
+	m, err := store.GetFileMeta(t.Context(), "nonexistent-file-id")
 	assert.ErrorIs(t, err, datastore.ErrFileNotFound)
 	assert.Nil(t, m)
 }
@@ -51,10 +51,10 @@ func TestMemoryMetaDataStoreGetFileMetaSuccess(t *testing.T) {
 		FileSize: 1024,
 		Checksum: "abc123",
 	}
-	err := store.SaveFileMeta(completionData)
+	err := store.SaveFileMeta(t.Context(), completionData)
 	assert.NoError(t, err)
 
-	m, err := store.GetFileMeta(fileId)
+	m, err := store.GetFileMeta(t.Context(), fileId)
 	assert.NoError(t, err)
 	assert.NotNil(t, m)
 	assert.Equal(t, fileId, m.FileId)
@@ -64,13 +64,13 @@ func TestMemoryMetaDataStoreGetFileMetaSuccess(t *testing.T) {
 
 func TestMemoryMetaDataStoreSaveFileCompletionDataOnNilData(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	err := store.SaveFileCompletionData(nil)
+	err := store.SaveFileCompletionData(t.Context(), nil)
 	assert.EqualError(t, err, "completion data cannot be nil")
 }
 
 func TestMemoryMetaDataStoreSaveFileCompletionDataOnInvalidID(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	err := store.SaveFileCompletionData(&datastore.FileCompletionData{
+	err := store.SaveFileCompletionData(t.Context(), &datastore.FileCompletionData{
 		FileId:         " 	",
 		PartSize:       1024,
 		PartsCompleted: 5,
@@ -80,14 +80,14 @@ func TestMemoryMetaDataStoreSaveFileCompletionDataOnInvalidID(t *testing.T) {
 
 func TestMemoryMetaDataStoreGetFileCompletionDataErrorOnInvalidID(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	m, err := store.GetFileCompletionData(" 	")
+	m, err := store.GetFileCompletionData(t.Context(), " 	")
 	assert.ErrorIs(t, err, datastore.ErrInvalidFileID)
 	assert.Nil(t, m)
 }
 
 func TestMemoryMetaDataStoreGetFileCompletionDataErrorOnMissingMeta(t *testing.T) {
 	store := memory.NewMetaDataStore()
-	m, err := store.GetFileCompletionData("nonexistent-file-id")
+	m, err := store.GetFileCompletionData(t.Context(), "nonexistent-file-id")
 	assert.ErrorIs(t, err, datastore.ErrFileNotFound)
 	assert.Nil(t, m)
 }
@@ -100,10 +100,10 @@ func TestMemoryMetaDataStoreGetFileCompletionDataSuccess(t *testing.T) {
 		PartSize:       1024,
 		PartsCompleted: 5,
 	}
-	err := store.SaveFileCompletionData(completionData)
+	err := store.SaveFileCompletionData(t.Context(), completionData)
 	assert.NoError(t, err)
 
-	m, err := store.GetFileCompletionData(fileId)
+	m, err := store.GetFileCompletionData(t.Context(), fileId)
 	assert.NoError(t, err)
 	assert.NotNil(t, m)
 	assert.Equal(t, fileId, m.FileId)

@@ -11,14 +11,14 @@ var (
 
 //go:generate mockery --name ReadCloser --output mocks
 type ReadCloser interface {
-	GetPosition() int64
+	GetPosition(ctx context.Context) int64
 	Read(ctx context.Context, p []byte) (n int, err error)
 	Close() error
 }
 
 //go:generate mockery --name WriteCloser --output mocks
 type WriteCloser interface {
-	GetPosition() int64
+	GetPosition(ctx context.Context) int64
 	Write(ctx context.Context, p []byte) (n int, err error)
 	Close() error
 }
